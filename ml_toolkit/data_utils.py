@@ -66,3 +66,11 @@ class DataProcessor:
 	def sample_data(data, sample_size=10):
 		sample = data[:sample_size]
 		return sample
+	
+	@staticmethod
+	def is_float(value):
+		try:
+			float(value)
+			return True
+		except (ValueError, TypeError):
+			return False
