@@ -50,6 +50,11 @@ class DataProcessor:
 		return col
 
 	@staticmethod
+	def sample_data(data, sample_size=10):
+		sample = data[:sample_size]
+		return sample
+
+	@staticmethod
 	def clean_num_data(col_data):
 		cleaned = []
 		for val in col_data:
@@ -61,8 +66,3 @@ class DataProcessor:
 				except (ValueError, TypeError):
 					pass
 		return cleaned
-
-	@staticmethod
-	def sample_data(data, sample_size=10):
-		sample = data[:sample_size]
-		return sample

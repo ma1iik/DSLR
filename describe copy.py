@@ -108,6 +108,12 @@ def main():
 		
 		stats_dict[name]['max_width'] = max_len
 	print_describe(stats_dict)
+	# for x in stats_dict.values():
+	# 	print(x)		
+	
+	df = pd.read_csv(sys.argv[1])
+	print("Pandas describe() output:")
+	print(df.describe())   
 
 
 if __name__ == '__main__':
