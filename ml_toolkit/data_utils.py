@@ -74,3 +74,14 @@ class DataProcessor:
 			return True
 		except (ValueError, TypeError):
 			return False
+	
+	@staticmethod
+	def is_column_exist(value, check):
+		if not value:
+			return True
+		try:
+			for raw in value:
+				if raw == check:
+					return False
+		except (ValueError, TypeError):
+			return True	
