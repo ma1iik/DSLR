@@ -2,7 +2,6 @@ from ml_toolkit import Statistics as st
 from ml_toolkit import DataProcessor as dp
 import csv
 import sys
-import pandas as pd
 import os
 
 def find_fitting_columns(stats_dict):
