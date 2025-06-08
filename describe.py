@@ -7,7 +7,6 @@ import os
 def find_fitting_columns(stats_dict):
 	col_names = list(stats_dict.keys())
 	max_terminal_width = os.get_terminal_size().columns
-	print(f'TERMINAL: {max_terminal_width}')
 	col_widths = [stats_dict[name]['max_width'] for name in col_names]
 	fitting_cols = {}
 	stats_width = 5
@@ -55,8 +54,6 @@ def print_describe(stats_dict):
 	for col_name in fitting_stats_dict:
 		width = fitting_stats_dict[col_name]['max_width'] + 2
 		headers += f"{col_name:>{width}}"
-	# last_spaces = (os.get_terminal_size().columns - len(headers)) * ''
-	# headers	+= last_spaces
 	print(headers)
 	for stat in stats:
 		line = f'{stat:<5}'
@@ -71,7 +68,7 @@ def print_describe(stats_dict):
 		
 
 
-def main():
+def describe():
 	if len(sys.argv) != 2:
 		print("Usage: python describe.py <csv_file>")
 		return
@@ -110,4 +107,4 @@ def main():
 
 
 if __name__ == '__main__':
-	main()
+	describe()

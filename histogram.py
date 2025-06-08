@@ -1,14 +1,12 @@
 from ml_toolkit import DataProcessor
 import matplotlib.pyplot as plt
 
-houses = {}
-
 def main():
     data = DataProcessor.load_csv("datasets/dataset_train.csv") # Load dataset from CSV
     houses = set()  # sets automatically avoid duplicates
     for row in data:
         house = row["Hogwarts House"]
-        if house:  # skip empty values
+        if house:  # skip empty values  
             houses.add(house)    
     # Convert the set to a list for further use    
     house_list=list(houses)
@@ -35,7 +33,7 @@ def main():
                 if DataProcessor.is_float(student[subject])  # Avoid empty or non-float values
             ]
                         # Plot histogram for this house in this subject
-            plt.hist(scores, label =house, bins=5, alpha = 0.5, edgecolor='black')
+            plt.hist(scores, label=house, bins=5, alpha=0.5, edgecolor='black')
 
         # Add labels, legend, and show the plot
         plt.title(subject)
@@ -43,8 +41,8 @@ def main():
         plt.ylabel("Number of Students")    
         plt.legend()
         plt.grid(True)
-        plt.show()
     plt.tight_layout()
+    plt.savefig('histogram_analysis.png', dpi=300, bbox_inches='tight')
     plt.show()
 
 
