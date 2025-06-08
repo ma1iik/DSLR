@@ -1,3 +1,6 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from ml_toolkit import Statistics as st 
 from ml_toolkit import DataProcessor as dp
 import matplotlib.pyplot as plt
@@ -61,7 +64,7 @@ def plot_correlation(data, subject1, subject2, correlation):
 	plt.show()
 
 def find_most_correlated_features():
-	data = dp.load_csv('datasets/dataset_train.csv')
+	data = dp.load_csv('../datasets/dataset_train.csv')
 	num_cols = dp.get_num_cols(data)
 	subjects = [col for col in num_cols if col != "Index"]
 	
@@ -93,11 +96,11 @@ def find_most_correlated_features():
 
 	# Sort by absolute correlation (highest first)
 	correlation_results.sort(key=lambda x: x['abs_correlation'], reverse=True)
-
-	print("Top 10 Most Correlated Feature Pairs:")
-	print("-" * 95)
-	print(f"{'Rank':<4} {'Subject 1':<30} {'Subject 2':<30} {'Correlation':<12} {'Points':<8}")
-	print("-" * 95)
+	if correlation_results:
+		print("Top 10 Most Correlated Feature Pairs:")
+		print("-" * 95)
+		print(f"{'Rank':<4} {'Subject 1':<30} {'Subject 2':<30} {'Correlation':<12} {'Points':<8}")
+		print("-" * 95)
 
 	for i, result in enumerate(correlation_results[:10]):
 		subj1_display = result['subject1'][:28] + ".." if len(result['subject1']) > 30 else result['subject1']
@@ -105,8 +108,8 @@ def find_most_correlated_features():
 		
 		print(f"{i+1:<4} {subj1_display:<30} {subj2_display:<30} "
 			f"{result['correlation']:<12.6f} {result['data_points']:<8}")
-
-	print("-" * 95)
+	if correlation_results:
+		print("-" * 95)
 	
 	# Plot only the MOST correlated pair
 	if best_pair:

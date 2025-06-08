@@ -1,8 +1,9 @@
-from ml_toolkit import Statistics as st 
-from ml_toolkit import DataProcessor as dp
-import csv
 import sys
 import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from ml_toolkit import Statistics as st 
+from ml_toolkit import DataProcessor as dp
+
 
 def find_fitting_columns(stats_dict):
 	col_names = list(stats_dict.keys())
