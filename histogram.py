@@ -1,7 +1,8 @@
-from ml_toolkit import DataProcessor
+from ml_toolkit import Statistics, DataProcessor
 import matplotlib.pyplot as plt
 
 houses = {}
+std_by_house = {}
 
 def main():
     data = DataProcessor.load_csv("datasets/dataset_train.csv") # Load dataset from CSV
@@ -25,22 +26,38 @@ def main():
     # Plot all houses' histograms on the same figure Create a single figure with subplots (1 row, N columns — one per subject)
     plt.figure(figsize=(15, 5))
     for idx, subject in enumerate(subjects, start=1):
-        plt.subplot(1, len(subjects), idx)  # 1 row, N columns: Create a subplot for each subject
-        # Plot histogram of scores for each house
+        # plt.subplot(1, len(subjects), idx)  # 1 row, N columns: Create a subplot for each subject
+        # Calculate standard deviation per house
         for house, students in names_by_house.items():
-            # Extract float-convertible scores from student data
             scores = [
                 float(student[subject])
                 for student in students
-                if DataProcessor.is_float(student[subject])  # Avoid empty or non-float values
+                if DataProcessor.is_float(student[subject])    
             ]
-                        # Plot histogram for this house in this subject
-            plt.hist(scores, label =house, bins=5, alpha = 0.5, edgecolor='black')
+            if scores:
+                std = Statistics.std(scores)
+                std_by_house[house] = std
 
-        # Add labels, legend, and show the plot
-        plt.title(subject)
+    #Find the house with the lowest standard deviation
+    most_homogeneous_house = min(std_by_house, key=std_by_house.get)
+    for idx, subject in enumerate(subjects, start=1):
+        plt.subplot(1, len(subjects), idx)  # 1 row, N columns: Create a subplot for each subject
+        # Calculate standard deviation per house
+        # Plot each house’s histogram
+        for house, students in names_by_house.items():
+            scores = [
+                float(student[subject])
+                for student in students
+                if DataProcessor.is_float(student[subject])
+            ]
+            if scores:
+                label = f"{house}* (most homog.)" if house == most_homogeneous_house else house
+                plt.hist(scores, label=label, bins=5, alpha=0.5, edgecolor='black')
+
+        # Add title and labels
+        plt.title(f"{subject} (Most homogeneous: {most_homogeneous_house})")
         plt.xlabel("Score")
-        plt.ylabel("Number of Students")    
+        plt.ylabel("Number of Students")
         plt.legend()
         plt.grid(True)
         plt.show()
