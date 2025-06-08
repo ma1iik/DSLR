@@ -66,7 +66,7 @@ def find_most_correlated_features():
 	subjects = [col for col in num_cols if col != "Index"]
 	
 	max_correlation = 0
-	best_pair = None  # Add this to track the best pair
+	best_pair = None
 	correlation_results = []
 	
 	for i in range(len(subjects)):
@@ -108,7 +108,7 @@ def find_most_correlated_features():
 
 	print("-" * 95)
 	
-	# Plot only the MOST correlated pair (remove the loop!)
+	# Plot only the MOST correlated pair
 	if best_pair:
 		subject1, subject2 = best_pair
 		if max_correlation > 0: 
