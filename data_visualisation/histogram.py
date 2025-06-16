@@ -4,11 +4,14 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from ml_toolkit import Statistics, DataProcessor
 import matplotlib.pyplot as plt
 
-houses = {}
-std_by_house = {}
+# houses = {}
+# std_by_house = {}
 
 def main():
     data = DataProcessor.load_csv("../datasets/dataset_train.csv") # Load dataset from CSV
+    houses = {}
+    std_by_house = {}
+
     houses = set()  # sets automatically avoid duplicates
     for row in data:
         house = row["Hogwarts House"]
