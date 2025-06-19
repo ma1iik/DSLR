@@ -54,7 +54,7 @@ def manual_pair_plot(data_by_house, features, colors=None):
 
     plt.suptitle("Manual Pair Plot of Features Grouped by House", fontsize=16)
     plt.savefig("manual_pair_plot.png", dpi=300, bbox_inches='tight')
-    plt.show()
+    # plt.show()
 
 
 def extract_numeric_data_by_house(data, features):
@@ -84,7 +84,7 @@ def extract_numeric_data_by_house(data, features):
     return result
 
 def main():
-    features = ["Astronomy", "Herbology", "Defense Against the Dark Arts", "Ancient Runes"] 
+    features = ["Astronomy", "Herbology", "Defense Against the Dark Arts", "Ancient Runes", "Arithmancy", "Divination" , "Muggle Studies", "History of Magic", "Transfiguration" , "Potions" , "Care of Magical Creatures", "Charms", "Flying"] 
     data = DataProcessor.load_csv("../datasets/dataset_train.csv") # Load dataset from CSV
     grouped = extract_numeric_data_by_house(data, features)
     manual_pair_plot(grouped, features)
