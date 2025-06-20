@@ -20,7 +20,7 @@ class Statistics:
 		fraction = pos - lower_i
 		lower_val = sorted_data[lower_i]
 		upper_val = sorted_data[upper_i]
-		res = lower_val+ fraction * (upper_val - lower_val)
+		res = lower_val + fraction * (upper_val - lower_val)
 		return res
 	
 	@staticmethod
