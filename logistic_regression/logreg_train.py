@@ -63,9 +63,8 @@ def stable_sigmoid(z):
 def make_pred(stud_grades, weights, bias):
 	score = bias  # θ₀
 	for i in range(len(weights)):
-		score += weights[i] * stud_grades[i]  # θᵢ * xᵢ 
-	# Hypothesis: h_θ(x) = σ(z) = 1 / (1 + e^(-z))
-	pred = stable_sigmoid(score)
+		score += weights[i] * stud_grades[i]  # z or score = θ₀ + θ₁x₁ + θ₂x₂ + θ₃x₃ + θ₄x₄
+	pred = stable_sigmoid(score) # Hypothesis: h_θ(x) = σ(z) = 1 / (1 + e^(-z))
 	return pred
 
 def train_house(target_house):
@@ -76,46 +75,36 @@ def train_house(target_house):
 	learning_rate = 0.1
 	prev_error = float('inf')
 	# Gradient Descent
-	for epoch in range(2000):
+	for epoch in range(1000):
 		total_bias_gradient = 0
 		total_weight_gradients = [0] * 4
 		total_error = 0
 		for student_num in range(len(all_stud_grades)):
 			stud_grades = all_stud_grades[student_num]	# x^(i)
 			actual_label = all_labels[student_num]			# y^(i)
-			# Forward pass: h_θ(x^(i))
 			pred = make_pred(stud_grades, weights, bias)
-			# Error term: (h_θ(x^(i)) - y^(i))
 			error = pred - actual_label
-			# Cost function: J(θ) = (1/2m) * Σ(h_θ(x^(i)) - y^(i))²
-			total_error += error * error
-			# Gradient computation:
-			# ∂J/∂θ₀ = (1/m) * Σ(h_θ(x^(i)) - y^(i))
+			if actual_label == 1:
+				total_error -= math.log(max(pred, 1e-15))
+			else:
+				total_error -= math.log(max(1 - pred, 1e-15))
 			total_bias_gradient += error
-			# ∂J/∂θⱼ = (1/m) * Σ(h_θ(x^(i)) - y^(i)) * x_j^(i)
 			for i in range(4):
 				total_weight_gradients[i] += error * stud_grades[i]
-		# Batch gradient descent update
 		num_students = len(all_stud_grades)  # m
-		# Update rule: θ := θ - α * ∂J/∂θ
-		# θ₀ := θ₀ - α * (1/m) * Σ(h_θ(x^(i)) - y^(i))
 		bias -= learning_rate * (total_bias_gradient / num_students)
-		# θⱼ := θⱼ - α * (1/m) * Σ(h_θ(x^(i)) - y^(i)) * x_j^(i)
 		for i in range(4):
 			weights[i] -= learning_rate * (total_weight_gradients[i] / num_students)
-		# Cost function value: J(θ) = (1/2m) * Σ(h_θ(x^(i)) - y^(i))²
 		avg_error = total_error / num_students
-		# Convergence check: |J_prev - J_current| < ε
 		if abs(prev_error - avg_error) < 0.000001:
 			break
 		prev_error = avg_error
-		# Learning rate decay: α := α * decay_factor
 		if epoch > 0 and epoch % 500 == 0:
 			learning_rate *= 0.8
 	return weights, bias, means, stds
 
 def save_all_weights(all_trained_weights, filename):
-	# Save trained parameters θ = {θ₀, θ₁, ..., θₙ} and normalization parameters
+	# Save trained parameters θ = {θ₀, θ₁, ..., θₙ}
 	with open(filename, 'w') as f:
 		for house, (weights, bias, means, stds) in all_trained_weights.items():
 			f.write(f"{house}_bias:{bias}\n")
