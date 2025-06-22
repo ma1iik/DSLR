@@ -12,12 +12,14 @@ def normalize_features(all_stud_grades):
 	num_feats = len(all_stud_grades[0])
 	means = []
 	stds = []
+
 	for i in range(num_feats):
 		feat_grades = [grades[i] for grades in all_stud_grades]
 		mean_val = st.mean(feat_grades)
 		std_val = st.std(feat_grades)
 		means.append(mean_val)
 		stds.append(std_val)
+
 	normalized_d = []
 	# x_normalized = (x - μ) / σ
 	for grades in all_stud_grades:
@@ -30,6 +32,7 @@ def load_and_prep_data(target_house):
 	subjects = ['Astronomy', 'Herbology', 'Ancient Runes', 'Defense Against the Dark Arts']
 	all_labels = []
 	all_stud_grades = []
+
 	for student in data:
 		if student['Hogwarts House'] == target_house:
 			label = 1
@@ -61,10 +64,10 @@ def stable_sigmoid(z):
 		return ez / (ez + 1)
 
 def make_pred(stud_grades, weights, bias):
-	score = bias  # θ₀
+	score = bias  								# θ₀
 	for i in range(len(weights)):
-		score += weights[i] * stud_grades[i]  # z or score = θ₀ + θ₁x₁ + θ₂x₂ + θ₃x₃ + θ₄x₄
-	pred = stable_sigmoid(score) # Hypothesis: h_θ(x) = σ(z) = 1 / (1 + e^(-z))
+		score += weights[i] * stud_grades[i]  	# z or score = θ₀ + θ₁x₁ + θ₂x₂ + θ₃x₃ + θ₄x₄
+	pred = stable_sigmoid(score) 				# Hypothesis: h_θ(x) = σ(z) = 1 / (1 + e^(-z))
 	return pred
 
 def train_house(target_house):
@@ -73,38 +76,35 @@ def train_house(target_house):
 	bias = 0.0
 	weights = [0.0] * 4
 	learning_rate = 0.1
-	prev_error = float('inf')
+
 	# Gradient Descent
+	# ∂J/∂θⱼ = (1/m) Σᵢ₌₁ᵐ (h_θ(x^i) - y^i) × xⱼ^i
 	for epoch in range(1000):
 		total_bias_gradient = 0
 		total_weight_gradients = [0] * 4
-		total_error = 0
 		for student_num in range(len(all_stud_grades)):
-			stud_grades = all_stud_grades[student_num]	# x^(i)
+			stud_grades = all_stud_grades[student_num]		# x^(i)
 			actual_label = all_labels[student_num]			# y^(i)
 			pred = make_pred(stud_grades, weights, bias)
-			error = pred - actual_label
-			if actual_label == 1:
-				total_error -= math.log(max(pred, 1e-15))
-			else:
-				total_error -= math.log(max(1 - pred, 1e-15))
-			total_bias_gradient += error
+			error = pred - actual_label						# (h_θ(x^i) - y^i)
+			total_bias_gradient += error					# Σ(h_θ(x^i) - y^i)
 			for i in range(4):
-				total_weight_gradients[i] += error * stud_grades[i]
-		num_students = len(all_stud_grades)  # m
+				total_weight_gradients[i] += error * stud_grades[i]		# Σ(h_θ(x^i) - y^i) × xⱼ^i
+
+		num_students = len(all_stud_grades)  				# m
 		bias -= learning_rate * (total_bias_gradient / num_students)
+
 		for i in range(4):
-			weights[i] -= learning_rate * (total_weight_gradients[i] / num_students)
-		avg_error = total_error / num_students
-		if abs(prev_error - avg_error) < 0.000001:
-			break
-		prev_error = avg_error
-		if epoch > 0 and epoch % 500 == 0:
+			gradient = total_weight_gradients[i] / num_students  		# (1/m) × Σ(h_θ(x^i) - y^i) × xⱼ^i
+			weights[i] -= learning_rate * gradient
+
+		if epoch > 240 and epoch % 250 == 0:
 			learning_rate *= 0.8
+
 	return weights, bias, means, stds
 
 def save_all_weights(all_trained_weights, filename):
-	# Save trained parameters θ = {θ₀, θ₁, ..., θₙ}
+	# Save trained theta parameters θ = {θ₀, θ₁, - θₙ}
 	with open(filename, 'w') as f:
 		for house, (weights, bias, means, stds) in all_trained_weights.items():
 			f.write(f"{house}_bias:{bias}\n")
@@ -115,9 +115,7 @@ def save_all_weights(all_trained_weights, filename):
 if __name__ == "__main__":
 	houses = ['Gryffindor', 'Slytherin', 'Ravenclaw', 'Hufflepuff']
 	all_trained_weights = {}
-	
 	for house in houses:
 		weights, bias, means, stds = train_house(house)
 		all_trained_weights[house] = (weights, bias, means, stds)
-	
 	save_all_weights(all_trained_weights, 'all_house_weights.txt')

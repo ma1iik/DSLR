@@ -5,42 +5,40 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from ml_toolkit import DataProcessor as dp
 
-def load_weights_and_normalization(filename):
-    weights_dict = {}
-    
-    with open(filename, 'r') as f:
-        current_house = None
+def read_model_data(file):
+    house_data = {}
+    with open(file, 'r') as f:
+        current = None
         for line in f:
             line = line.strip()
             if '_bias:' in line:
                 house = line.split('_bias:')[0]
                 bias = float(line.split(':')[1])
-                current_house = house
-                weights_dict[house] = {'bias': bias}
+                current = house
+                house_data[house] = {'bias': bias}
             elif '_weights:' in line:
                 weights_str = line.split(':')[1]
                 weights = [float(w) for w in weights_str.split(',')]
-                weights_dict[current_house]['weights'] = weights
+                house_data[current]['weights'] = weights
             elif '_means:' in line:
                 means_str = line.split(':')[1]
                 means = [float(m) for m in means_str.split(',')]
-                weights_dict[current_house]['means'] = means
+                house_data[current]['means'] = means
             elif '_stds:' in line:
                 stds_str = line.split(':')[1]
                 stds = [float(s) for s in stds_str.split(',')]
-                weights_dict[current_house]['stds'] = stds
-    
-    return weights_dict
+                house_data[current]['stds'] = stds
+    return house_data
 
-def stable_sigmoid(z):
-    z = max(min(z, 500), -500)
-    if z >= 0:
-        return 1 / (1 + math.exp(-z))
+def sigmoid(x):
+    x = max(min(x, 500), -500)
+    if x >= 0:
+        return 1 / (1 + math.exp(-x))
     else:
-        ez = math.exp(z)
-        return ez / (ez + 1)
+        exp_x = math.exp(x)
+        return exp_x / (exp_x + 1)
 
-def prepare_student_grades(student):
+def get_grades(student):
     subjects = ['Astronomy', 'Herbology', 'Ancient Runes', 'Defense Against the Dark Arts']
     grades = []
     for subject in subjects:
@@ -49,83 +47,55 @@ def prepare_student_grades(student):
         else:
             grade = 0.0
         grades.append(grade)
-    
     return grades
 
-def normalize_student_grades(grades, means, stds):
-    normalized = []
+def standardize(grades, means, stds):
+    """Convert grades to z-scores"""
+    result = []
     for i in range(len(grades)):
         if stds[i] != 0:
-            normalized.append((grades[i] - means[i]) / stds[i])
+            result.append((grades[i] - means[i]) / stds[i])
         else:
-            normalized.append(0.0)
-    return normalized
+            result.append(0.0)
+    return result
 
-def predict_house(student_grades, all_weights):
+def classify_student(grades, model_data):
+    """Figure out which house this student belongs to"""
     houses = ['Gryffindor', 'Slytherin', 'Ravenclaw', 'Hufflepuff']
-    probabilities = []
+    scores = []
     
     for house in houses:
-        bias = all_weights[house]['bias']
-        weights = all_weights[house]['weights']
-        means = all_weights[house]['means']
-        stds = all_weights[house]['stds']
+        bias = model_data[house]['bias']
+        weights = model_data[house]['weights']
+        means = model_data[house]['means']
+        stds = model_data[house]['stds']
         
-        normalized_grades = normalize_student_grades(student_grades, means, stds)
+        normalized = standardize(grades, means, stds)
         
         score = bias
         for i in range(len(weights)):
-            score += weights[i] * normalized_grades[i]
+            score += weights[i] * normalized[i] 
         
-        probability = stable_sigmoid(score)
-        probabilities.append(probability)
+        prob = sigmoid(score)
+        scores.append(prob)
     
-    max_index = probabilities.index(max(probabilities))
-    predicted_house = houses[max_index]
-    
-    return predicted_house, probabilities
+    best_match = scores.index(max(scores))
+    return houses[best_match], scores
 
-def test_on_training_data():
-    weights = load_weights_and_normalization('all_house_weights.txt')
-    train_data = dp.load_csv('datasets/dataset_train.csv')
+def run_predictions():
+    model = read_model_data('all_house_weights.txt')
+    students = dp.load_csv('datasets/dataset_test.csv')
     
-    y_true = []
-    y_pred = []
-    
-    for i, student in enumerate(train_data):
-        student_grades = prepare_student_grades(student)
-        predicted_house, probabilities = predict_house(student_grades, weights)
-        actual_house = student['Hogwarts House']
-        
-        y_true.append(actual_house)
-        y_pred.append(predicted_house)
-    
-    try:
-        from sklearn.metrics import accuracy_score
-        sklearn_accuracy = accuracy_score(y_true, y_pred)
-        sklearn_accuracy_percent = sklearn_accuracy * 100
-        return sklearn_accuracy_percent
-    except ImportError:
-        correct = sum(1 for true, pred in zip(y_true, y_pred) if true == pred)
-        manual_accuracy = (correct / len(y_true)) * 100
-        return manual_accuracy
-
-def predict_test_data():
-    weights = load_weights_and_normalization('all_house_weights.txt')
-    test_data = dp.load_csv('datasets/dataset_test.csv')
-    
-    predictions = []
-    
-    for i, student in enumerate(test_data):
-        student_grades = prepare_student_grades(student)
-        predicted_house, probabilities = predict_house(student_grades, weights)
-        predictions.append(predicted_house)
+    results = []
+    for i, student in enumerate(students):
+        grades = get_grades(student)
+        house, probs = classify_student(grades, model)
+        results.append(house)
     
     with open('houses.csv', 'w') as f:
         f.write("Index,Hogwarts House\n")
-        for i, house in enumerate(predictions):
+        for i, house in enumerate(results):
             f.write(f"{i},{house}\n")
 
 if __name__ == "__main__":
-    training_accuracy = test_on_training_data()
-    predict_test_data()
+    run_predictions()
