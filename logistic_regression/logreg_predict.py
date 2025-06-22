@@ -49,8 +49,7 @@ def get_grades(student):
         grades.append(grade)
     return grades
 
-def standardize(grades, means, stds):
-    """Convert grades to z-scores"""
+def normalize(grades, means, stds):
     result = []
     for i in range(len(grades)):
         if stds[i] != 0:
@@ -60,7 +59,6 @@ def standardize(grades, means, stds):
     return result
 
 def classify_student(grades, model_data):
-    """Figure out which house this student belongs to"""
     houses = ['Gryffindor', 'Slytherin', 'Ravenclaw', 'Hufflepuff']
     scores = []
     
@@ -70,8 +68,7 @@ def classify_student(grades, model_data):
         means = model_data[house]['means']
         stds = model_data[house]['stds']
         
-        normalized = standardize(grades, means, stds)
-        
+        normalized = normalize(grades, means, stds)
         score = bias
         for i in range(len(weights)):
             score += weights[i] * normalized[i] 
