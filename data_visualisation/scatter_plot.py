@@ -17,10 +17,9 @@ def calc_correlation(subject1, subject2, data):
 	std_x = st.std(x_data)
 	std_y = st.std(y_data)
 	
-	# prevention of division by zero further down in the correlation formula
 	if std_x == 0 or std_y == 0:
 		return 0
-	#  Pearson Correlation Coefficient formula
+	#Pearson Correlation Coefficient formula
 	n = len(x_data)
 	numerator = sum((x_data[i] - mean_x) * (y_data[i] - mean_y) for i in range(n))
 	correlation = numerator / ((n - 1) * std_x * std_y)
@@ -38,7 +37,6 @@ def plot_correlation(data, subject1, subject2, correlation):
 	}
 	
 	house_data = {'Gryffindor': [], 'Slytherin': [], 'Ravenclaw': [], 'Hufflepuff': []}
-	
 	for row in data:
 		try:
 			x_score = float(row[subject1])
@@ -61,26 +59,25 @@ def plot_correlation(data, subject1, subject2, correlation):
 	plt.legend(fontsize=12)
 	plt.grid(True, alpha=0.3)
 	plt.savefig('scatter_plot.png', dpi=300, bbox_inches='tight')
-	plt.show()
+	# plt.show()
 
-def find_most_correlated_features():
-	data = dp.load_csv('../datasets/dataset_train.csv')
+def best_correlat_feats():
+	script_dir = os.path.dirname(os.path.abspath(__file__))
+	dataset_path = os.path.join(script_dir, '..', 'datasets', 'dataset_train.csv')
+	data = dp.load_csv(dataset_path)
+	# data = dp.load_csv('./datasets/dataset_train.csv')
 	num_cols = dp.get_num_cols(data)
 	subjects = [col for col in num_cols if col != "Index"]
-	
 	max_correlation = 0
 	best_pair = None
 	correlation_results = []
-	
+
 	for i in range(len(subjects)):
 		for j in range(i + 1, len(subjects)):
 			subject1 = subjects[i]
 			subject2 = subjects[j]
-			
-			correlation = calc_correlation(subject1, subject2, data)
-			
+			correlation = calc_correlation(subject1, subject2, data)	
 			valid_count = len(dp.get_aligned_pairs(data, subject1, subject2))
-			
 			correlation_results.append({
 				'subject1': subject1,
 				'subject2': subject2,
@@ -88,13 +85,10 @@ def find_most_correlated_features():
 				'abs_correlation': abs(correlation),
 				'data_points': valid_count
 			})
-			
-			# Track highest absolute correlation AND pair
 			if abs(correlation) > abs(max_correlation):
 				max_correlation = correlation
 				best_pair = (subject1, subject2)
 
-	# Sort by absolute correlation (highest first)
 	correlation_results.sort(key=lambda x: x['abs_correlation'], reverse=True)
 	if correlation_results:
 		print("Top 10 Most Correlated Feature Pairs:")
@@ -111,7 +105,6 @@ def find_most_correlated_features():
 	if correlation_results:
 		print("-" * 95)
 	
-	# Plot only the MOST correlated pair
 	if best_pair:
 		subject1, subject2 = best_pair
 		if max_correlation > 0: 
@@ -133,4 +126,4 @@ def find_most_correlated_features():
 		
 
 if __name__ == '__main__':
-	find_most_correlated_features()
+	best_correlat_feats()

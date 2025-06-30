@@ -1,16 +1,13 @@
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from ml_toolkit import Statistics, DataProcessor
-import matplotlib.pyplot as plt
-
+from ml_toolkit import DataProcessor
 import matplotlib.pyplot as plt
 
 def manual_pair_plot(data_by_house, features, colors=None):
     num_features = len(features)
     houses = list(data_by_house.keys())
     if colors is None:
-        # Default color map
         colors = {
             house: color for house, color in zip(houses, ["red", "blue", "green", "orange"])
         }
@@ -25,7 +22,6 @@ def manual_pair_plot(data_by_house, features, colors=None):
             feat_y = features[i]
 
             if i == j:
-                # Diagonal: Histogram
                 for house in houses:
                     values = data_by_house[house][feat_x]
                     ax.hist(values, alpha=0.6, color=colors[house], label=house)
@@ -34,7 +30,6 @@ def manual_pair_plot(data_by_house, features, colors=None):
                 if j == 0:
                     ax.set_ylabel(feat_y, fontsize=10)
             else:
-                # Off-diagonal: Scatter plot
                 for house in houses:
                     points = [
                         (x, y)
@@ -50,7 +45,10 @@ def manual_pair_plot(data_by_house, features, colors=None):
                     ax.set_ylabel(feat_y, fontsize=10)
 
             if i == 0 and j == num_features - 1:
-                ax.legend(loc='upper left', fontsize=8)
+                handles, labels = ax.get_legend_handles_labels()
+                if handles:
+                    ax.legend(loc='upper left', fontsize=8)
+
 
     plt.suptitle("Manual Pair Plot of Features Grouped by House", fontsize=16)
     plt.savefig("manual_pair_plot.png", dpi=300, bbox_inches='tight')
@@ -58,12 +56,6 @@ def manual_pair_plot(data_by_house, features, colors=None):
 
 
 def extract_numeric_data_by_house(data, features):
-    # Organizes numeric feature data grouped by house.
-    #"Gryffindor": {
-    #     "Astronomy": [float, float, ...],
-    #     "Herbology": [float, float, ...],
-    #     ...
-    # },
     result = {}
 
     for row in data:
@@ -79,13 +71,16 @@ def extract_numeric_data_by_house(data, features):
                 value = float(row.get(feature, ""))
                 result[house][feature].append(value)
             except (ValueError, TypeError):
-                continue  # skip missing or non-numeric values
+                continue  
 
     return result
 
 def main():
     features = ["Astronomy", "Herbology", "Defense Against the Dark Arts", "Ancient Runes", "Arithmancy", "Divination" , "Muggle Studies", "History of Magic", "Transfiguration" , "Potions" , "Care of Magical Creatures", "Charms", "Flying"] 
-    data = DataProcessor.load_csv("../datasets/dataset_train.csv") # Load dataset from CSV
+    # data = DataProcessor.load_csv("../datasets/dataset_train.csv")
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    dataset_path = os.path.join(script_dir, '..', 'datasets', 'dataset_train.csv')
+    data = DataProcessor.load_csv(dataset_path)
     grouped = extract_numeric_data_by_house(data, features)
     manual_pair_plot(grouped, features)
 

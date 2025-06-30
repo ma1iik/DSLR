@@ -76,11 +76,9 @@ def describe():
 	if os.path.exists(sys.argv[1]):
 		data = dp.load_csv(sys.argv[1])
 		num_cols = dp.get_num_cols(data)
-		print(num_cols)
 	else:
 		print("Error: Path or dataset file name incorrect!")
 		return
-	print("Pandas describe() output:")
 	stats_dict = {}
 	for name in num_cols:
 		max_len = len(name)

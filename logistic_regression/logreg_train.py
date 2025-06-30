@@ -27,8 +27,10 @@ def normalize_features(all_stud_grades):
 		normalized_d.append(normalized)
 	return normalized_d, means, stds
 
-def load_and_prep_data(target_house):
-	data = dp.load_csv('datasets/dataset_train.csv')
+def load_and_prep_data(target_house, script_dir):
+	dataset_path = os.path.join(script_dir, '..', 'datasets', 'dataset_train.csv')
+	data = dp.load_csv(dataset_path)
+	# data = dp.load_csv('datasets/dataset_train.csv')
 	subjects = ['Astronomy', 'Herbology', 'Ancient Runes', 'Defense Against the Dark Arts']
 	all_labels = []
 	all_stud_grades = []
@@ -70,8 +72,8 @@ def make_pred(stud_grades, weights, bias):
 	pred = stable_sigmoid(score) 				# Hypothesis: h_θ(x) = σ(z) = 1 / (1 + e^(-z))
 	return pred
 
-def train_house(target_house):
-	all_stud_grades, all_labels = load_and_prep_data(target_house)
+def train_house(target_house, script_dir):
+	all_stud_grades, all_labels = load_and_prep_data(target_house, script_dir)
 	all_stud_grades, means, stds = normalize_features(all_stud_grades)
 	bias = 0.0
 	weights = [0.0] * 4
@@ -115,7 +117,12 @@ def save_all_weights(all_trained_weights, filename):
 if __name__ == "__main__":
 	houses = ['Gryffindor', 'Slytherin', 'Ravenclaw', 'Hufflepuff']
 	all_trained_weights = {}
+
+	script_dir = os.path.dirname(os.path.abspath(__file__))
+	project_dir = os.path.dirname(script_dir)
+	output_path = os.path.join(project_dir, 'all_house_weights.txt')
+	
 	for house in houses:
-		weights, bias, means, stds = train_house(house)
+		weights, bias, means, stds = train_house(house, script_dir)
 		all_trained_weights[house] = (weights, bias, means, stds)
-	save_all_weights(all_trained_weights, 'all_house_weights.txt')
+	save_all_weights(all_trained_weights, output_path)
